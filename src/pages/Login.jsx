@@ -12,7 +12,7 @@ function Login() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      navigate('/home');
+      navigate('/overview');
     }
   }, [navigate]);
 
@@ -21,7 +21,7 @@ function Login() {
     try {
       const res = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', res.data.token);
-      navigate('/home');
+      navigate('/overview');
     } catch (err) {
       console.error(err);
       setError('Login failed. Please check your credentials.');
