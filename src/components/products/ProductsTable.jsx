@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Edit, Trash2, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../utils/api"; // ✅ Axios instance
+import api from "../../utils/api"; // ✅ Axios instance with token interceptor
 
 const ProductsTable = () => {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ const ProductsTable = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await api.get("/products");
+      const res = await api.get("products");
       setProducts(res.data.data);
       setFilteredProducts(res.data.data);
     } catch (error) {
@@ -48,18 +48,29 @@ const ProductsTable = () => {
     setIsModalOpen(false);
   };
 
+  const handleDeleteProduct = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+
+    try {
+      await api.delete(`products/delete/${id}`);
+      setProducts((prev) => prev.filter((p) => p._id !== id));
+      setFilteredProducts((prev) => prev.filter((p) => p._id !== id));
+    } catch (err) {
+      console.error("Error deleting product:", err);
+      alert("❌ Failed to delete product. See console for details.");
+    }
+  };
+
   return (
     <motion.div
-      className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 overflow-auto"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
       {/* Header + Search */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Product List
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Product List</h2>
         <div className="relative w-full sm:w-1/3">
           <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
           <input
@@ -83,7 +94,7 @@ const ProductsTable = () => {
         </button>
       </div>
 
-      {/* Table Wrapper */}
+      {/* Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
           <thead className="bg-gray-100 dark:bg-gray-800">
@@ -109,7 +120,8 @@ const ProductsTable = () => {
                   {product.images?.[0] ? (
                     <div className="relative">
                       <img
-                        src={`https://backend.pinkstories.ae${product.images[0].replace('/src', '')}`}
+              
+                        src={`http://localhost:7000${product.images[0].replace('/src', '')}`}
                         alt={product.productName}
                         className="w-12 h-12 object-cover rounded-lg cursor-pointer"
                         onClick={() => handleImageClick(product.images)}
@@ -130,9 +142,9 @@ const ProductsTable = () => {
                 <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{product.discount || "-"}</td>
                 <td className="px-4 py-3 text-gray-800 dark:text-gray-200">{product.stockQuantity}</td>
                 <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{product.weight}</td>
-                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{product.sizeVariants?.join(", ")}</td>
-                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{product.colorVariants?.join(", ")}</td>
-                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{product.material}</td>
+                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{Array.isArray(product.sizeVariants) && product.sizeVariants.length > 0 ? product.sizeVariants.join(", ") : "-"}</td>
+                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{Array.isArray(product.colorVariants) && product.colorVariants.length > 0 ? product.colorVariants.join(", ") : "-"}</td>
+                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{Array.isArray(product.material) && product.material.length > 0 ? product.material.join(", ") : "-"}</td>
                 <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{product.deliveryTime}</td>
                 <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{product.productDescription}</td>
                 <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{product.dateAdded?.slice(0, 10)}</td>
@@ -140,10 +152,18 @@ const ProductsTable = () => {
                 <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{product.careInstructions}</td>
                 <td className="px-4 py-3">
                   <div className="flex space-x-3">
-                    <button title="Edit" className="text-blue-500 hover:text-blue-400">
+                    <button
+                      title="Edit"
+                      className="text-blue-500 hover:text-blue-400"
+                      onClick={() => navigate(`/products/${product._id}`)}
+                    >
                       <Edit size={18} />
                     </button>
-                    <button title="Delete" className="text-red-500 hover:text-red-400">
+                    <button
+                      title="Delete"
+                      className="text-red-500 hover:text-red-400"
+                      onClick={() => handleDeleteProduct(product._id)}
+                    >
                       <Trash2 size={18} />
                     </button>
                   </div>
@@ -183,6 +203,7 @@ const ProductsTable = () => {
 };
 
 export default ProductsTable;
+
 
 
 

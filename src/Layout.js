@@ -12,6 +12,7 @@ import OrdersPage from "./pages/OrdersPage";
 import SalesPage from "./pages/SalesPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import SettingsPage from "./pages/SettingsPage";
+import EditProductForm from "./components/products/EditProduct";
 // import other pages as needed
 
 const Layout = () => {
@@ -31,6 +32,7 @@ const Layout = () => {
           <Route path="/overview" element={<OverviewPage />} />
           <Route path="/products" element={<ProductPage />} />
           <Route path="/add-product" element={<AddProductForm />} />
+          <Route path="/products/:id" element={<EditProductForm />} />
           <Route path="/users" element={<UsersPage />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/sales" element={<SalesPage />} />

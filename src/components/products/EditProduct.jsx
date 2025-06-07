@@ -1,7 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BASE_URL } from "../../utils/api";
+import { useParams } from 'react-router-dom';
+import api from "../../utils/api"; // ✅ Axios instance
 
-const AddProductForm = () => {
+const EditProductForm = () => {
+      const { id } = useParams(); // get product ID from URL
+      
   const [formData, setFormData] = useState({
     sku: "",
     brand: "",
@@ -35,6 +39,58 @@ const AddProductForm = () => {
 
   const [previewImages, setPreviewImages] = useState([]);
   const [message, setMessage] = useState("");
+ 
+  //fetch data of product
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const response = await api.get(`/products/${id}`);
+        const product = response.data.data;
+       
+        
+
+        // Ensure all fields are set, including nested and array fields
+        setFormData({
+          sku: product.sku || "",
+          brand: product.brand || "",
+          weight: product.weight || "",
+          productName: product.productName || "",
+          category: product.category || "",
+          deliveryTime: product.deliveryTime || "",
+          shortDescription: product.shortDescription || "",
+          productDescription: product.productDescription || "",
+          careInstructions: product.careInstructions || "",
+          stockQuantity: product.stockQuantity || 0,
+          price: product.price || 0,
+          discount: product.discount || 0,
+          colorVariants: Array.isArray(product.colorVariants) ? product.colorVariants : [""],
+          material: Array.isArray(product.material) ? product.material : [""],
+          sizeVariants: {
+            indian: Array.isArray(product.sizeVariants?.indian) ? product.sizeVariants.indian : [],
+            pakistan: Array.isArray(product.sizeVariants?.pakistan) ? product.sizeVariants.pakistan : [],
+          },
+          images: product.images || [], // Keep as array for FormData submission
+          neck: product.neck || "",
+          topDesignStyling: product.topDesignStyling || "",
+          topFabric: product.topFabric || "",
+          bottomFabric: product.bottomFabric || "",
+          dupattaFabric: product.dupattaFabric || "",
+          weavePattern: product.weavePattern || "",
+          stitch: product.stitch || "",
+          printOrPattern: product.printOrPattern || "",
+        });
+
+        // Set preview images (assuming product.images contains URLs)
+        setPreviewImages(product.images || []);
+      } catch (error) {
+        console.error("Error fetching product:", error);
+        setMessage("❌ Failed to fetch product data. Please try again.");
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -95,8 +151,8 @@ const AddProductForm = () => {
         }
       }
 
-      const response = await fetch(`${BASE_URL}products/add`, {
-        method: "POST",
+      const response = await fetch(`${BASE_URL}products//edit/:id`, {
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -187,10 +243,10 @@ const AddProductForm = () => {
             <span className="text-3xl">🛍️</span>
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent mb-4">
-            Add New Product
+            Edit Product
           </h1>
           <p className="text-gray-300 text-lg max-w-2xl mx-auto">
-            Create and manage your product inventory with our comprehensive form
+            Update and manage your product inventory with our comprehensive form
           </p>
         </div>
 
@@ -475,7 +531,7 @@ const AddProductForm = () => {
               >
                 <span className="flex items-center justify-center space-x-2">
                   
-                  <span>Add Product to Inventory</span>
+                  <span>Update Product to Inventory</span>
                
                 </span>
               </button>
@@ -501,7 +557,7 @@ const AddProductForm = () => {
   );
 };
 
-export default AddProductForm;
+export default EditProductForm;
 
 
 
